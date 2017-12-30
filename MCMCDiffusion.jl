@@ -4,8 +4,8 @@ module MCMCDiffusion
 
 using DynamicalBilliards, Distributions
 
-include("boxmap.jl")
-include("proposals.jl")
+include("Boxmap.jl")
+include("Proposals.jl")
 include("MCMC.jl")
 
 end
