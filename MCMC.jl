@@ -1,4 +1,4 @@
-using Distributions
+export rMCMC
 
 function tstar(to::S, beta::Float64, y::T; ac = 0.5, D = 1/4) where {T <: AbstractFloat, S<: Integer}
     tst = to - abs((ac-1)/(2*D*beta) * 1/(1 - y^2))

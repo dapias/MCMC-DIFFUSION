@@ -1,3 +1,5 @@
+export Ma, inverseMa, evolution
+
 ##The functions that defines the dynamics are defined. Also, the functions for finding the preimages.
 
 function boxmap(x::T, a::Float64) where {T <: AbstractFloat}

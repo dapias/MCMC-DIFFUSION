@@ -2,7 +2,7 @@ __precompile__()
 
 module MCMCDiffusion
 
-using DynamicaBilliards, Distributions
+using DynamicalBilliards, Distributions
 
 include("boxmap.jl")
 include("proposals.jl")

@@ -1,3 +1,5 @@
+export Proposal, ShiftProposal, LocalProposal, shift_proposal, local_proposal
+
 abstract type Proposal end
 
 mutable struct ShiftProposal{T} <: Proposal
