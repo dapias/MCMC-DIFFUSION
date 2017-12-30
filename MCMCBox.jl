@@ -1,5 +1,6 @@
 export rMCMC
 
+
 function tstar(to::S, beta::Float64, y::T; ac = 0.5, D = 1/4) where {T <: AbstractFloat, S<: Integer}
     tst = to - abs((ac-1)/(2*D*beta) * 1/(1 - y^2))
     if tst < to*9/10
@@ -30,20 +31,20 @@ function ratio_shift(tshift::T, tmean1::T, tmean2::T, sigma_t::Float64, to::S) w
     xi1 = (tshift - tmean1)/sigma_t
     xi2 = (tshift - tmean2)/sigma_t
 
-#    alpha1 = (0 - tmean1)/sigma_t
-#    beta1 = (to - tmean1)/sigma_t
-    
-#    alpha2 = ( 0 - tmean2)/sigma_t
-#    beta2 = (to - tmean2)/sigma_t
+    alpha1 = (0 - tmean1)/sigma_t
+    beta1 = (to - tmean1)/sigma_t
+   
+    alpha2 = ( 0 - tmean2)/sigma_t
+    beta2 = (to - tmean2)/sigma_t
 
     phi(x) = 1/sqrt(2*pi)*exp(-1/2*x^2)
-#    psi(x) = 1/2*(1 + erf(x/sqrt(2)))
+    psi(x) = 1/2*(1 + erf(x/sqrt(2)))
 
-#    f1 = phi(xi1)/(sigma_t*(psi(beta1) - psi(alpha1)))
-#    f2 = phi(xi2)/(sigma_t*(psi(beta2) - psi(alpha2)))
+    f1 = phi(xi1)/(sigma_t*(psi(beta1) - psi(alpha1)))
+    f2 = phi(xi2)/(sigma_t*(psi(beta2) - psi(alpha2)))
 
-    f1 = phi(xi1)/sigma_t
-    f2 = phi(xi2)/sigma_t
+#    f1 = phi(xi1)/sigma_t
+#    f2 = phi(xi2)/sigma_t
 
     return f2/f1
 end
@@ -62,7 +63,6 @@ function proposal(s1::ShiftProposal, s2::ShiftProposal, l::LocalProposal)
     end
 end
 
-            
 function proposal(tshift, sigma, a)
     shift1 = ShiftProposal(tshift, x -> shift_proposal(x, tshift, a))
     shift2 = ShiftProposal(-tshift, x -> shift_proposal(x, -tshift, a))
@@ -71,37 +71,27 @@ function proposal(tshift, sigma, a)
     proposal(shift1, shift2, local_prop)
 end
 
+function proposal(forw_prop::ShiftProposal, sigma, a)
+    tshift = -forw_prop.parameter
+    ShiftProposal(tshift,
+                  x -> shift_proposal(x, tshift, a))
+end
+
+function proposal(forw_prop::LocalProposal, sigma, a)
+    LocalProposal(sigma, x -> local_proposal(x, sigma) )
+end
+
 function ratio(x1::T, x2::T, sigma1::T, sigma2::T, tshift::T, tmean1::T, tmean2::T, sigma_t::Float64, to::S, forward::ShiftProposal, backward::ShiftProposal) where {T <: AbstractFloat, S <: Integer}
-    signo1 = sign(forward.parameter)
-    signo2 = sign(backward.parameter)
-    rat = 0.
-    if signo1 == signo2
-         rat = 0.
-#    elseif signo1 > signo2
-#        rat = 1/4.*ratio_shift(tshift, tmean1, tmean2, sigma_t, to)
-    else
-        #        rat = 4.*ratio_shift(tshift, tmean1, tmean2, sigma_t, to)
-        rat = ratio_shift(tshift, tmean1, tmean2, sigma_t, to)
-    end
-    
-    return rat
-end
 
+    ratio_shift(tshift, tmean1, tmean2, sigma_t, to)
 
-function ratio(x1::T, x2::T, sigma1::T, sigma2::T, tshift::T, tmean1::T, tmean2::T, sigma_t::Float64, to::S, forward::ShiftProposal, backward::LocalProposal)  where {T <: AbstractFloat, S <: Integer}
-
-    return 0.
-end
-
-function ratio(x1::T, x2::T, sigma1::T, sigma2::T, tshift::T, tmean1::T, tmean2::T, sigma_t::Float64, to::S, forward::LocalProposal, backward::ShiftProposal)  where {T <: AbstractFloat, S <: Integer}
-
-    return 0.
 end
 
 function ratio(x1::T, x2::T, sigma1::T, sigma2::T, tshift::T, tmean1::T, tmean2::T, sigma_t::Float64, to::S, forward::LocalProposal, backward::LocalProposal)  where {T <: AbstractFloat, S <: Integer}
 
     ratio_local(x1, x2, sigma1, sigma2)
 end
+
 
 function rMCMC(to::S, N::Int,beta::Float64; T = Float64, sigma_t = 1.0, a = 4., D = 1/4.) where {S<: Integer}
     birk_coord = zeros(T, N,2)
@@ -122,7 +112,7 @@ function rMCMC(to::S, N::Int,beta::Float64; T = Float64, sigma_t = 1.0, a = 4., 
         y_prime = abs(evolution(init_prime, to, a) - 1/2.)/sqrt(2*D*to)
         tshift_meanprime = t_shift(to, beta, y_prime)
         sigma_prime = sigma(init_prime, to, y_prime, beta)
-        back_prop = proposal(tshift, sigma_prime, a)
+        back_prop = proposal(forw_prop, sigma_prime, a)
         
         rat = ratio(init, init_prime, sigma_local, sigma_prime, tshift, tshift_mean, tshift_meanprime, sigma_t, to, forw_prop, back_prop)
         ac = rat*exp(-beta*(y_prime -y)*sqrt(2*D*to))
@@ -146,6 +136,4 @@ function rMCMC(to::S, N::Int,beta::Float64; T = Float64, sigma_t = 1.0, a = 4., 
     
     birk_coord, acceptance/N
 end
-
-
 
