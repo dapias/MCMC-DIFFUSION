@@ -1,4 +1,4 @@
-export Proposal, ShiftProposal, LocalProposal, shift_proposal, local_proposal
+export Proposal, ShiftProposal, LocalProposal, shift_proposal, local_proposal, billiard_evolution!
 
 abstract type Proposal end
 
@@ -42,61 +42,10 @@ end
 
 
 ##For Billiards
+function billiard_evolution!(p::Particle{T}, bt::Vector{<:Obstacle{T}}, t::T) where {T<:AbstractFloat}
 
-function local_proposal(init::InitialCondition, n::Int, bt::Vector{<:Obstacle{T}}, sigma::T) where {T <: AbstractFloat}
-
-    delta_theta = rand()*(2pi)
-    rprime = abs(randn()*sigma)
-
-    s_new = cos(delta_theta)*rprime + init.s
-    s_new = mod(s_new, 1.0)
-    sinphi_new = sin(delta_theta)*rprime + init.sinphi
-
-    if abs(sinphi_new) > 1.0
-        return init
-    end
-
-    p = particle_from_coordinates([s_new, sinphi_new], n, bt)
-    side = ceil(Int, s_new*n)
-
-    return InitialCondition(p, s_new, sinphi_new, side)
-end
-
-"""
-Function that evolves a particle until it reaches a periodic wall. It returns the index associated with the periodic image of the side that the particle reaches (where the motion would continue)
-"""
-function evolution_to_periodicwall!(p::Particle{T}, bt::Vector{<:Obstacle{T}}, n::Int) where {T<: AbstractFloat}
-    i = 1
-    while true
-        tmin::T, i::Int = next_collision(p, bt)
-        tmin = DynamicalBilliards.relocate!(p, bt[i], tmin)
-        resolvecollision!(p, bt[i])
-        if typeof(bt[i]) <: PeriodicWall
-            break
-        end
-    end
-    if n == 6
-        index = i >= 4 ? mod(i + div(n,2), n) : i + div(n,2)
-    elseif n==4
-        index = i >= 3 ? mod(i + div(n,2), n) : i + div(n,2)
-    end
-        
-end
-
-"""
-Function that is passed to the type `ShiftProposal`
-"""
-function shift_proposal(particle::Particle{T}, sides::Int, bt::Vector{<:Obstacle{T}}, tshift::T, index::Int) where {T <: AbstractFloat}
-    p = copy(particle)
-    if tshift < 0.0  ##Invert the direction of the velocity
-        #and put the particle on its periodic image
-        p.vel = -p.vel
-        p.pos += bt[index].normal 
-    end
-    
-    t = abs(tshift)
     count = zero(T)
-    
+
     while count < t
         tmin::T, i::Int = next_collision(p, bt)
         # set counter
@@ -104,26 +53,80 @@ function shift_proposal(particle::Particle{T}, sides::Int, bt::Vector{<:Obstacle
             break
         end
         #####
-        tmin = DynamicalBilliards.relocate!(p, bt[i], tmin)
+        tmin = relocate!(p, bt[i], tmin)
         resolvecollision!(p, bt[i])
         count += DynamicalBilliards.increment_counter(t, tmin)
     end#time loop
-    ##Here the evolution ends and then we propagate until the next collision
-    new_index = evolution_to_periodicwall!(p, bt, sides)
-    new_particle = Particle(p.pos, p.vel, SVector{2,T}([0.,0.]))
+
+    tmin = t - count 
+    propagate!(p, tmin)
+    
+    return nothing
+end
+
+function local_proposal(init::InitialCondition, bt::Vector{<:Obstacle{T}}, sigma::T) where {T <: AbstractFloat}
+
+    rprime = abs(randn()*sigma)
+    rand_theta = rand()*(2*pi)
+
+    d1 = rprime*cos(rand_theta)
+    d2 = rprime*sin(rand_theta)
+
+    xmin::T, ymin::T, xmax::T, ymax::T = DynamicalBilliards.cellsize(bt)
+
+    pnew = copy(init.particle)
+
+    theta = T(rand())*(2pi)
+    
+    xnew = d1*cos(theta) + pnew.pos[1]
+    ynew = d1*sin(theta) + pnew.pos[2]
+    rdir = rand([-1,1])
+    phinew = mod(init.phi + rdir*d2, 2pi)
+
+    if (xmin <= xnew <= xmax) && (ymin <= ynew <= ymax)
+        pnew = Particle([xnew, ynew, phinew])
+        dist = DynamicalBilliards.distance_init(pnew, bt)
+        new_init = InitialCondition(pnew, phinew)
+        
+        if dist <= sqrt(eps(T))
+            return init
+        else
+            return new_init
+        end
+    else
+        return init
+    end
+end
+
+"""
+Function that is passed to the type `ShiftProposal`
+"""
+function shift_proposal(init::InitialCondition, bt::Vector{<:Obstacle{T}}, tshift::T) where {T <: AbstractFloat}
+
+    p = copy(init.particle)
+    if tshift < 0.0  ##Invert the direction of the velocity
+        p.vel = -p.vel
+    end
+    
+    t = abs(tshift)
+    billiard_evolution!(p, bt, t)
 
     if tshift < 0.0
-        new_particle.vel = -new_particle.vel
-        new_particle.pos += bt[new_index].normal
-        if sides == 6
-            new_index = new_index >= 4 ? mod(new_index + div(sides,2), sides) : new_index + div(sides,2)
-        elseif sides == 4
-            new_index = new_index >= 3 ? mod(new_index + div(sides,2), sides) : new_index + div(sides,2)
-        end
+        p.vel -= p.vel
     end
-    s, sinphi = coordinates_from_particle(new_particle, sides, bt, new_index)
     
-    return InitialCondition(new_particle, s, sinphi, new_index)
+
+    phinew = atan2(p.vel[2], p.vel[1])
+    if phinew < 0.0
+        phinew += 2pi
+    end
+
+    p = Particle([p.pos[1],p.pos[2], phinew])
+
+    
+    init = InitialCondition(p, phinew)
+
+    return init
 end
 
 
