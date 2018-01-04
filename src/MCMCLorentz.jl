@@ -2,7 +2,7 @@ export rMCMC
 
 
 function tstar(beta::Float64, to::T, D::Float64, y::T; a = 0.5) where {T <: AbstractFloat}
-    tstar = to - abs((a-1.)/(2*D*beta) * 1/(1-y^2))
+    tstar = to - abs((a-1.)/(2.*D*beta) * 1/(1-y^2))
     if tstar < to*9/10
         return T(to*9/10)
     end
@@ -33,8 +33,8 @@ function distance(i1::InitialCondition{T}, i2::InitialCondition{T}) where {T<:Ab
 
     d1 = norm(x1 -x2)
 
-    a1 = i2.phi
-    a2 = i1.phi
+    a1 = i1.phi
+    a2 = i2.phi
 
     deltaphi = abs(a2 -a1)
     if deltaphi > pi

@@ -112,7 +112,7 @@ function shift_proposal(init::InitialCondition, bt::Vector{<:Obstacle{T}}, tshif
     billiard_evolution!(p, bt, t)
 
     if tshift < 0.0
-        p.vel -= p.vel
+        p.vel = -p.vel
     end
     
 
