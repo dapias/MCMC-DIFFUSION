@@ -2,9 +2,9 @@ export rMCMC, distance
 
 
 function tstar(beta::Float64, to::T, D::Float64, y::T; a = 0.5) where {T <: AbstractFloat}
-    tstar = to - abs((a-1.)/(2.*D*beta) * 1/(1-y^2))
+    tstar = to - abs((a-1.)/(2*D*beta) * 1/(1-y^2))
     if tstar < to*9/10
-        return T(to*9/10)
+        return to*9/10
     end
     tstar
 end
@@ -126,7 +126,6 @@ function rMCMC(to::T, N::Int, bt::Vector{<:Obstacle{T}}, beta::Float64, D::Float
     birk_coord = zeros(T, N, 1)
     ###initialize
     init  = init_prime = randominitialcondition(bt)
-#    birk_coord[1, 1:2] = [init]
     obs = x::Particle -> distance(x, bt, to)/sqrt(2*D*to) ##y-observable
     y_prime = y = obs(init.particle)  ##Actually this is y
     birk_coord[1] = y*sqrt(2*D*to)
@@ -159,12 +158,11 @@ function rMCMC(to::T, N::Int, bt::Vector{<:Obstacle{T}}, beta::Float64, D::Float
                 acceptance += 1
             end
         end
-        #   println(i)
-
+        
         birk_coord[i] = y*sqrt(2*D*to)
     end
     
-    birk_coord, acceptance/N
+    birk_coord, acceptance/(N-1)
 end
 
 

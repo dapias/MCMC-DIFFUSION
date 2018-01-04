@@ -78,10 +78,10 @@ end
 function local_proposal(init::InitialCondition, bt::Vector{<:Obstacle{T}}, sigma::T) where {T <: AbstractFloat}
 
     rprime = abs(randn()*sigma)
-    rand_theta = rand()*(2*pi)
+    rand_theta = T(rand())*2*pi
 
-    d1 = rprime*cos(rand_theta)
-    d2 = rprime*sin(rand_theta)
+    d1 = abs(rprime*cos(rand_theta))
+    d2 = abs(rprime*sin(rand_theta))
 
     xmin::T, ymin::T, xmax::T, ymax::T = DynamicalBilliards.cellsize(bt)
 
@@ -133,8 +133,6 @@ function shift_proposal(init::InitialCondition, bt::Vector{<:Obstacle{T}}, tshif
     end
 
     p = Particle([p.pos[1],p.pos[2], phinew])
-
-    
     init = InitialCondition(p, phinew)
 
     return init
