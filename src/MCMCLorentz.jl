@@ -121,7 +121,7 @@ function distance(particle::Particle{T}, bt::Vector{<:Obstacle{T}}, t::T) where 
     d = norm(rpos[2]-rpos[1])
 end
 
-function rMCMC(to::T, N::Int, bt::Vector{<:Obstacle{T}}, n::Int, beta::Float64, D::Float64; sigma_t = 2.0) where {T<: AbstractFloat}
+function rMCMC(to::T, N::Int, bt::Vector{<:Obstacle{T}}, beta::Float64, D::Float64; sigma_t = 2.0) where {T<: AbstractFloat}
 
     birk_coord = zeros(T, N, 1)
     ###initialize
