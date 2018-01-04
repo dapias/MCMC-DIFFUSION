@@ -1,4 +1,4 @@
-export rMCMC
+export rMCMC, distance
 
 
 function tstar(beta::Float64, to::T, D::Float64, y::T; a = 0.5) where {T <: AbstractFloat}
@@ -33,10 +33,10 @@ function distance(i1::InitialCondition{T}, i2::InitialCondition{T}) where {T<:Ab
 
     d1 = norm(x1 -x2)
 
-    a1 = i1.phi
-    a2 = i2.phi
+    phi1 = i1.phi
+    phi2 = i2.phi
 
-    deltaphi = abs(a2 -a1)
+    deltaphi = abs(phi2 -phi1)
     if deltaphi > pi
         deltaphi = 2pi - abs(deltaphi)
     end
@@ -97,7 +97,29 @@ function proposal(forw_prop::LocalProposal, sigma, bt::Vector{<:Obstacle{T}}) wh
     LocalProposal(sigma, x::InitialCondition -> local_proposal(x, bt, sigma) )
 end
 
+function distance(particle::Particle{T}, bt::Vector{<:Obstacle{T}}, t::T) where {T<:AbstractFloat}
+    p = copy(particle)
+    rpos = SVector{2,T}[]
+    push!(rpos, p.pos)
+    count = zero(T)
 
+    while count < t
+        tmin::T, i::Int = next_collision(p, bt)
+        # set counter
+        if count +  DynamicalBilliards.increment_counter(t, tmin) > t
+            break
+        end
+        #####
+        tmin = relocate!(p, bt[i], tmin)
+        resolvecollision!(p, bt[i])
+        count += DynamicalBilliards.increment_counter(t, tmin)
+    end#time loop
+
+    tmin = t - count 
+    propagate!(p, tmin)
+    push!(rpos, p.pos + p.current_cell)
+    d = norm(rpos[2]-rpos[1])
+end
 
 function rMCMC(to::T, N::Int, bt::Vector{<:Obstacle{T}}, n::Int, beta::Float64, D::Float64; sigma_t = 2.0) where {T<: AbstractFloat}
 

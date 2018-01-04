@@ -1,4 +1,15 @@
 export Proposal, ShiftProposal, LocalProposal, shift_proposal, local_proposal, billiard_evolution!
+import Base.copy 
+
+function copy(p::Particle{T}) where {T<:AbstractFloat}
+    pos = copy(p.pos)
+    vel = copy(p.vel)
+    cc = copy(p.current_cell)
+
+    Particle(pos,vel, cc)
+end
+
+
 
 abstract type Proposal end
 
