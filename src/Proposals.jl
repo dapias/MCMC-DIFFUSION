@@ -78,10 +78,10 @@ end
 function local_proposal(init::InitialCondition, bt::Vector{<:Obstacle{T}}, sigma::T) where {T <: AbstractFloat}
 
     rprime = abs(randn()*sigma)
-    rand_theta = T(rand())*2*pi
+    rand_theta = T(rand())*pi/2
 
-    d1 = abs(rprime*cos(rand_theta))
-    d2 = abs(rprime*sin(rand_theta))
+    d1 = rprime*cos(rand_theta)
+    d2 = rprime*sin(rand_theta)
 
     xmin::T, ymin::T, xmax::T, ymax::T = DynamicalBilliards.cellsize(bt)
 
