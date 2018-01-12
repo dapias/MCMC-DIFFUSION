@@ -11,25 +11,18 @@ bth = billiard_polygon(polygon_sides, space/sqrt(3); setting = "periodic")
 d = Disk(([T(0.),T(0.)]),r)
 push!(bth, d)
 
-function rdirect(to, n)
-    distances = zeros(n)
-    for i in 1:n
-        p = randominitialcondition(bt).particle
-        distances[i] = MCMCDiffusion.distance(p,bth,to)
-    end
-    distances
-end
-
+D = 0.17
+beta = -1.
 N = 10
 to = collect(10:5.25.)
 means = zeros(to)
 for i in 1:length(to)
     ts = to[i]
     rstar = ts/2.
-    res = rdirect(ts, N)
-    estimator = length(res[res .>= rstar])/N
-    means[i] = estimator
+    chaotic_results, acceptance = rMCMC(ts, N, beta, D)
+    res = sum(exp.(beta*chaotic_results[chaotic_results .> rstar]))/N
+    means[i] = res
     println(estimator)
 end
                       
-save("meanslorentzdirect.jld", "means", means, "time", to)
+save("meanslorentzmcmc.jld", "means", means, "time", to)
