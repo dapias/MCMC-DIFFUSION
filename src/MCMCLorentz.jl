@@ -35,12 +35,10 @@ function distance(i1::InitialCondition{T}, i2::InitialCondition{T}) where {T<:Ab
 
     phi1 = i1.phi
     phi2 = i2.phi
-
     deltaphi = abs(phi2 -phi1)
     if deltaphi > pi
         deltaphi = 2pi - abs(deltaphi)
     end
-
     new_vector = [d1, deltaphi]
 
     norm(new_vector)

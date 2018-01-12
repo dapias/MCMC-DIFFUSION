@@ -18,7 +18,7 @@ function randominitialcondition(bt::Vector{<:Obstacle{T}}) where {T<:AbstractFlo
     while f == 0 || f==1/4 || f==1/2 || f == 3/4
         f = T(rand())
     end
-    phi0 = T(f*2pi)
+    phi0 = f*2*pi - pi   ##phi0 between -pi and pi
     xp = T(rand())*(xmax-xmin) + xmin
     yp = T(rand())*(ymax-ymin) + ymin
     p = Particle([xp, yp, phi0])

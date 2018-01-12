@@ -92,7 +92,9 @@ function local_proposal(init::InitialCondition, bt::Vector{<:Obstacle{T}}, sigma
     xnew = d1*cos(theta) + pnew.pos[1]
     ynew = d1*sin(theta) + pnew.pos[2]
     rdir = rand([-1,1])
-    phinew = mod(init.phi + rdir*d2, 2pi)
+
+    
+    phinew = init.phi + rdir*d2
 
     if (xmin <= xnew <= xmax) && (ymin <= ynew <= ymax)
         pnew = Particle([xnew, ynew, phinew])
@@ -128,10 +130,6 @@ function shift_proposal(init::InitialCondition, bt::Vector{<:Obstacle{T}}, tshif
     
 
     phinew = atan2(p.vel[2], p.vel[1])
-    if phinew < 0.0
-        phinew += 2pi
-    end
-
     p = Particle([p.pos[1],p.pos[2], phinew])
     init = InitialCondition(p, phinew)
 
