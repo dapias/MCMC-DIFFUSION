@@ -1,6 +1,6 @@
 # Metropolis - Hastings for diffusive deterministic dynamical systems
 
-We provide the code that supports the results reported in the manuscript *Importance sampling and diffusion in deterministic dynamical systems*. Here, we implement a Metropolis-Hastings algorithm for the estimation of a weighted distribution of the displacement random variable.
+We provide the code that supports the results reported in the manuscript *Importance sampling and diffusion in deterministic dynamical systems*. We implement a Metropolis-Hastings algorithm for the estimation of a weighted distribution of the displacement random variable.
 
 In the folder `Examples` we illustrate its basic use for two dynamical systems: the Lorentz gas and the Box map. For its use in other deterministic dynamical systems the dynamics should be introduced and the function `rMCMC` implemented. The steps to do it are always the same, namely: 
 
