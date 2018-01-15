@@ -6,9 +6,9 @@ In the folder `Examples` we illustrate its basic use for two dynamical systems: 
 
 1) The dynamical system is coded, taking care of defining it for both positive and negative times. You might use the package [DynamicalSystems.jl](https://github.com/JuliaDynamics/DynamicalSystems.jl) .
 
-2). The main parameters, i.e. the mean Lyapunov exponent and the diffusion coefficient are estimated or passed if they are previously known.
+2) The main parameters, i.e. the mean Lyapunov exponent and the diffusion coefficient are estimated or passed if they are previously known.
 
-3). The two proposals are coded based on the dynamics. It would depend on the nature of the dynamical system (e.g. map or flow) and its dimension.
+3) The two proposals are coded based on the dynamics. It would depend on the nature of the dynamical system (e.g. map or flow) and its dimension.
 
 4) The observable $r_{t_o}$ (or something directly related to it) is defined and used inside `rMCMC`. In our examples, it is the `distance` for the Lorentz gas and `abs(evolution - 1/2)` for the box map. 
 
