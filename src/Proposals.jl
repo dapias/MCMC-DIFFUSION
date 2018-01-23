@@ -54,21 +54,27 @@ end
 
 ##For Billiards
 function billiard_evolution!(p::Particle{T}, bt::Vector{<:Obstacle{T}}, t::T) where {T<:AbstractFloat}
-
     count = zero(T)
+    t_to_write = zero(T)
 
     while count < t
         tmin::T, i::Int = next_collision(p, bt)
-        # set counter
         if count +  DynamicalBilliards.increment_counter(t, tmin) > t
             break
         end
-        #####
         tmin = relocate!(p, bt[i], tmin)
+        t_to_write += tmin
         resolvecollision!(p, bt[i])
-        count += DynamicalBilliards.increment_counter(t, tmin)
-    end#time loop
 
+        if typeof(bt[i]) <: PeriodicWall
+            continue # do not write output if collision with with PeriodicWall
+        else
+            # set counter
+            count += DynamicalBilliards.increment_counter(t, t_to_write)
+            t_to_write = zero(T)
+        end
+    end#time, or collision number, loo
+    
     tmin = t - count 
     propagate!(p, tmin)
     
@@ -95,6 +101,13 @@ function local_proposal(init::InitialCondition, bt::Vector{<:Obstacle{T}}, sigma
 
     
     phinew = init.phi + rdir*d2
+    while phinew > pi
+        phinew -= pi
+    end
+
+    while phinew < -pi
+        phinew += pi
+    end
 
     if (xmin <= xnew <= xmax) && (ymin <= ynew <= ymax)
         pnew = Particle([xnew, ynew, phinew])
