@@ -119,7 +119,8 @@ function distance(particle::Particle{T}, bt::Vector{<:Obstacle{T}}, t::T) where 
     d = norm(rpos[2]-rpos[1])
 end
 
-function rMCMC(to::T, N::Int, bt::Vector{<:Obstacle{T}}, beta::Float64, D::Float64; sigma_t = 2.0) where {T<: AbstractFloat}
+function rMCMC(to::T, N::Int, bt::Vector{<:Obstacle{T}}, beta::Float64, D::Float64; sigma_t = 2.0,
+               initial_conditions = false) where {T<: AbstractFloat}
 
     birk_coord = zeros(T, N, 1)
     ###initialize
@@ -127,6 +128,12 @@ function rMCMC(to::T, N::Int, bt::Vector{<:Obstacle{T}}, beta::Float64, D::Float
     obs = x::Particle -> distance(x, bt, to)/sqrt(2*D*to) ##y-observable
     y_prime = y = obs(init.particle)  ##Actually this is y
     birk_coord[1] = y*sqrt(2*D*to)
+    if initial_conditions
+        birk_coord = zeros(T, N, 4)
+        birk_coord[1,1] =  y*sqrt(2*D*to)
+        birk_coord[1,2:end] = [init.particle.pos[1], init.particle.pos[2], init.phi]
+    end
+        
     acceptance = 0
     ####################
     for i in 2:N
@@ -156,8 +163,15 @@ function rMCMC(to::T, N::Int, bt::Vector{<:Obstacle{T}}, beta::Float64, D::Float
                 acceptance += 1
             end
         end
+
+        if initial_conditions
+            birk_coord[i,1] =  y*sqrt(2*D*to)
+            birk_coord[i,2:end] = [init.particle.pos[1], init.particle.pos[2], init.phi]
+        else
+            birk_coord[i] = y*sqrt(2*D*to)
+        end
+
         
-        birk_coord[i] = y*sqrt(2*D*to)
     end
     
     birk_coord, acceptance/(N-1)
