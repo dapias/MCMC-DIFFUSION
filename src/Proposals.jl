@@ -55,24 +55,14 @@ end
 ##For Billiards
 function billiard_evolution!(p::Particle{T}, bt::Vector{<:Obstacle{T}}, t::T) where {T<:AbstractFloat}
     count = zero(T)
-    t_to_write = zero(T)
-
     while count < t
         tmin::T, i::Int = next_collision(p, bt)
         if count +  DynamicalBilliards.increment_counter(t, tmin) > t
             break
         end
         tmin = relocate!(p, bt[i], tmin)
-        t_to_write += tmin
         resolvecollision!(p, bt[i])
-
-        if typeof(bt[i]) <: PeriodicWall
-            continue # do not write output if collision with with PeriodicWall
-        else
-            # set counter
-            count += DynamicalBilliards.increment_counter(t, t_to_write)
-            t_to_write = zero(T)
-        end
+        count += DynamicalBilliards.increment_counter(t, tmin)
     end#time, or collision number, loo
     
     tmin = t - count 
@@ -128,9 +118,10 @@ end
 Function that is passed to the type `ShiftProposal`
 """
 function shift_proposal(init::InitialCondition, bt::Vector{<:Obstacle{T}}, tshift::T) where {T <: AbstractFloat}
-
+    
     p = copy(init.particle)
     if tshift < 0.0  ##Invert the direction of the velocity
+        
         p.vel = -p.vel
     end
     

@@ -99,27 +99,12 @@ function distance(particle::Particle{T}, bt::Vector{<:Obstacle{T}}, t::T) where 
     p = copy(particle)
     rpos = SVector{2,T}[]
     push!(rpos, p.pos)
-    count = zero(T)
-
-    while count < t
-        tmin::T, i::Int = next_collision(p, bt)
-        # set counter
-        if count +  DynamicalBilliards.increment_counter(t, tmin) > t
-            break
-        end
-        #####
-        tmin = relocate!(p, bt[i], tmin)
-        resolvecollision!(p, bt[i])
-        count += DynamicalBilliards.increment_counter(t, tmin)
-    end#time loop
-
-    tmin = t - count 
-    propagate!(p, tmin)
+    billiard_evolution!(p, bt, t)
     push!(rpos, p.pos + p.current_cell)
     d = norm(rpos[2]-rpos[1])
 end
 
-function rMCMC(to::T, N::Int, bt::Vector{<:Obstacle{T}}, beta::Float64, D::Float64; sigma_t = 2.0,
+function rMCMC(to::T, N::Int, bt::Vector{<:Obstacle{T}}, beta::Float64, D::Float64; sigma_t = 2*to/3.,
                initial_conditions = false) where {T<: AbstractFloat}
 
     birk_coord = zeros(T, N, 1)
