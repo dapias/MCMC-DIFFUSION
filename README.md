@@ -1,8 +1,8 @@
 # Metropolis - Hastings for diffusive deterministic dynamical systems
 
-We provide the code that supports the results reported in the manuscript *Importance sampling and diffusion in deterministic dynamical systems*. We implement a Metropolis-Hastings algorithm for the estimation of a weighted distribution of the displacement random variable.
+We provide the code that supports the results reported in the manuscript *Monte Carlo sampling in diffusive dynamical systems*. We implement here the Metropolis-Hastings algorithm for the estimation of a weighted distribution of the displacement.
 
-In the folder `Examples` we illustrate its basic use for two dynamical systems: the Lorentz gas and the Box map. For its use in other deterministic dynamical systems the dynamics should be introduced and the function `rMCMC` implemented. The steps to do it are always the same, namely: 
+In the folder `Examples` we illustrate its basic use for two dynamical systems: Lorentz gas and Box map. For its use in other deterministic dynamical systems the dynamics should be introduced and the function `rMCMC`. The steps to do it are always the same, namely: 
 
 1) The dynamical system is coded, taking care of defining it for both positive and negative times. You might use the package [DynamicalSystems.jl](https://github.com/JuliaDynamics/DynamicalSystems.jl) .
 
@@ -10,7 +10,7 @@ In the folder `Examples` we illustrate its basic use for two dynamical systems: 
 
 3) The two proposals are coded based on the dynamics. It would depend on the nature of the dynamical system (e.g. map or flow) and its dimension.
 
-4) The observable $r_{t_o}$ (or something directly related to it) is defined and used inside `rMCMC`. In our examples, it is the `distance` for the Lorentz gas and `abs(evolution - 1/2)` for the box map. 
+4) The observable $r_{t_o}$ is defined and used inside `rMCMC`. In our examples, it is the `distance` for the Lorentz gas and `abs(evolution - 1/2)` for the box map. 
 
 
 
@@ -21,10 +21,5 @@ From within Julia do
 ```
 julia> Pkg.clone(https://github.com/dapias/MCMC-DIFFUSION.git")
 ```
-
-## Acknowledgments
-
-1. [George Datseris](https://github.com/Datseris) @Datseris for its support with the package [DynamicalBilliards.jl](https://github.com/JuliaDynamics/DynamicalBilliards.jl) which allows us to make efficiently the calculations for the Lorentz gas.
-
 
  
