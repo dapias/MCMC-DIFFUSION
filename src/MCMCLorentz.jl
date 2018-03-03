@@ -104,7 +104,7 @@ function distance(particle::Particle{T}, bt::Vector{<:Obstacle{T}}, t::T) where 
     d = norm(rpos[2]-rpos[1])
 end
 
-function rMCMC(to::T, N::Int, bt::Vector{<:Obstacle{T}}, beta::Float64, D::Float64; sigma_t = 2*to/3.,
+function rMCMC(to::T, N::Int, bt::Vector{<:Obstacle{T}}, beta::Float64, D::Float64; sigma_t = Float64(to),
                initial_conditions = false) where {T<: AbstractFloat}
 
     birk_coord = zeros(T, N, 1)
@@ -123,7 +123,7 @@ function rMCMC(to::T, N::Int, bt::Vector{<:Obstacle{T}}, beta::Float64, D::Float
     ####################
     for i in 2:N
         tshift_mean = t_shift(beta, to, D, y)   
-        tshift = T(rand(Normal(tshift_mean, sigma_t)))
+        tshift = T(rand(TruncatedNormal(tshift_mean, sigma_t, 0., to)))
         sigma_local =  sigma(beta, to, D, y)
         forw_prop = proposal(tshift, sigma_local, bt)
 
