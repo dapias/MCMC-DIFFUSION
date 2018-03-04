@@ -105,7 +105,7 @@ function distance(particle::Particle{T}, bt::Vector{<:Obstacle{T}}, t::T) where 
 end
 
 function rMCMC(to::T, N::Int, bt::Vector{<:Obstacle{T}}, beta::Float64, D::Float64; sigma_t = Float64(to),
-               initial_conditions = false) where {T<: AbstractFloat}
+               initial_conditions = false, lyapexp = 2.10) where {T<: AbstractFloat}
 
     birk_coord = zeros(T, N, 1)
     ###initialize
@@ -124,13 +124,13 @@ function rMCMC(to::T, N::Int, bt::Vector{<:Obstacle{T}}, beta::Float64, D::Float
     for i in 2:N
         tshift_mean = t_shift(beta, to, D, y)   
         tshift = T(rand(TruncatedNormal(tshift_mean, sigma_t, 0., to)))
-        sigma_local =  sigma(beta, to, D, y)
+        sigma_local =  sigma(beta, to, D, y, l_star = lyapexp)
         forw_prop = proposal(tshift, sigma_local, bt)
 
         init_prime = forw_prop.f(init)
         y_prime = obs(init_prime.particle)
         tshift_meanprime = t_shift(beta, to, D, y_prime)
-        sigma_prime =  sigma(beta, to, D, y_prime)
+        sigma_prime =  sigma(beta, to, D, y_prime, l_star = lyapexp)
         back_prop = proposal(forw_prop, sigma_prime, bt)
 
         rat = ratio(init, init_prime, sigma_local, sigma_prime, tshift, tshift_mean, tshift_meanprime, sigma_t, to, forw_prop, back_prop)
