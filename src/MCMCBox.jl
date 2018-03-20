@@ -1,7 +1,7 @@
 export rMCMC
 
 
-function tstar(to::S, beta::Float64, y::T; ac = 0.5, D = 1/4) where {T <: AbstractFloat, S<: Integer}
+function tstar(to::S, beta::Float64,  D::Float64, y::T; ac = 0.5) where {T <: AbstractFloat, S<: Integer}
     tst = to - abs((ac-1)/(2*D*beta) * 1/(1 - y^2))
     if tst < to*9/10
         return T(to*9/10)
@@ -9,14 +9,14 @@ function tstar(to::S, beta::Float64, y::T; ac = 0.5, D = 1/4) where {T <: Abstra
     tst
 end
 
-function sigma(x::T, to::S, y::T, beta::Float64; a = 4.) where {T <: AbstractFloat, S<: Integer}
+function sigma(x::T, to::S, y::T, beta::Float64, D::Float64; a = 4.) where {T <: AbstractFloat, S<: Integer}
     lambda = log(a)
-    tst = tstar(to, beta, y)
+    tst = tstar(to, beta, D, y)
     exp(-lambda*tst)
 end
 
-function t_shift(to::S, beta::Float64, y::T) where {T<:AbstractFloat, S<: Integer}
-    tst = tstar(to, beta, y)
+function t_shift(to::S, beta::Float64, D::Float64, y::T) where {T<:AbstractFloat, S<: Integer}
+    tst = tstar(to, beta, D, y)
     to - tst
 end
 
@@ -93,26 +93,26 @@ function ratio(x1::T, x2::T, sigma1::T, sigma2::T, tshift::T, tmean1::T, tmean2:
 end
 
 
-function rMCMC(to::S, N::Int,beta::Float64; T = Float64, sigma_t = 1.0, a = 4., D = 1/4.) where {S<: Integer}
+function rMCMC(to::S, N::Int,beta::Float64, D::Float64; T = Float64, sigma_t = 1.0, a_parameter = 4.) where {S<: Integer}
     birk_coord = zeros(T, N,2)
     ###initialize
     init  = init_prime = T(rand())
     birk_coord[1, 1] = init
-    y_prime = y = abs(evolution(init, to, a) - 1/2.)/sqrt(2*D*to)
+    y_prime = y = abs(evolution(init, to, a_parameter) - 1/2.)/sqrt(2*D*to)
     birk_coord[1, 2] = y
     acceptance = 0
     ######
     for i in 2:N
-        tshift_mean = t_shift(to, beta, y)
+        tshift_mean = t_shift(to, beta, D, y)
         tshift = T(rand(TruncatedNormal(tshift_mean, sigma_t, 0., to)))
-        sigma_local =  sigma(init, to, y ,beta)
-        forw_prop = proposal(tshift, sigma_local, a)
+        sigma_local =  sigma(init, to, y ,beta, D, a = a_parameter)
+        forw_prop = proposal(tshift, sigma_local, a_parameter)
         
         init_prime = forw_prop.f(init)
-        y_prime = abs(evolution(init_prime, to, a) - 1/2.)/sqrt(2*D*to)
-        tshift_meanprime = t_shift(to, beta, y_prime)
-        sigma_prime = sigma(init_prime, to, y_prime, beta)
-        back_prop = proposal(forw_prop, sigma_prime, a)
+        y_prime = abs(evolution(init_prime, to, a_parameter) - 1/2.)/sqrt(2*D*to)
+        tshift_meanprime = t_shift(to, beta, D, y_prime)
+        sigma_prime = sigma(init_prime, to, y_prime, beta, D, a = a_parameter)
+        back_prop = proposal(forw_prop, sigma_prime, a_parameter)
         
         rat = ratio(init, init_prime, sigma_local, sigma_prime, tshift, tshift_mean, tshift_meanprime, sigma_t, to, forw_prop, back_prop)
         ac = rat*exp(-beta*(y_prime -y)*sqrt(2*D*to))
