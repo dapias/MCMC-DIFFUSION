@@ -9,7 +9,7 @@ function tstar(to::S, beta::Float64,  D::Float64, y::T; ac = 0.5) where {T <: Ab
     tst
 end
 
-function sigma(x::T, to::S, y::T, beta::Float64, D::Float64; a = 4.) where {T <: AbstractFloat, S<: Integer}
+function sigma(x::T, to::S, y::T, beta::Float64, D::Float64, a ::Float64) where {T <: AbstractFloat, S<: Integer}
     lambda = log(a)
     tst = tstar(to, beta, D, y)
     exp(-lambda*tst)
@@ -93,25 +93,25 @@ function ratio(x1::T, x2::T, sigma1::T, sigma2::T, tshift::T, tmean1::T, tmean2:
 end
 
 
-function rMCMC(to::S, N::Int,beta::Float64, D::Float64; T = Float64, sigma_t = 1.0, a_parameter = 4.) where {S<: Integer}
+function rMCMC(to::S, N::Int,beta::Float64, D::Float64, a_parameter::Float64; T = Float64, sigma_t = 1.0) where {S<: Integer}
     birk_coord = zeros(T, N,2)
     ###initialize
     init  = init_prime = T(rand())
     birk_coord[1, 1] = init
     y_prime = y = abs(evolution(init, to, a_parameter) - 1/2.)/sqrt(2*D*to)
-    birk_coord[1, 2] = y
+    birk_coord[1, 2] = y*sqrt(2*D*to)
     acceptance = 0
     ######
     for i in 2:N
         tshift_mean = t_shift(to, beta, D, y)
         tshift = T(rand(TruncatedNormal(tshift_mean, sigma_t, 0., to)))
-        sigma_local =  sigma(init, to, y ,beta, D, a = a_parameter)
+        sigma_local =  sigma(init, to, y ,beta, D, a_parameter)
         forw_prop = proposal(tshift, sigma_local, a_parameter)
         
         init_prime = forw_prop.f(init)
         y_prime = abs(evolution(init_prime, to, a_parameter) - 1/2.)/sqrt(2*D*to)
         tshift_meanprime = t_shift(to, beta, D, y_prime)
-        sigma_prime = sigma(init_prime, to, y_prime, beta, D, a = a_parameter)
+        sigma_prime = sigma(init_prime, to, y_prime, beta, D, a_parameter)
         back_prop = proposal(forw_prop, sigma_prime, a_parameter)
         
         rat = ratio(init, init_prime, sigma_local, sigma_prime, tshift, tshift_mean, tshift_meanprime, sigma_t, to, forw_prop, back_prop)

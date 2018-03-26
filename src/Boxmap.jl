@@ -20,37 +20,71 @@ function Ma(x::T, a::Float64) where {T<: AbstractFloat}
     end
 end
 
-function inverseboxmap(x::T, a::Float64) where {T <: AbstractFloat}  
-    if x ==0.0
+function inverseboxmap(y::T, a::Float64) where {T <: AbstractFloat}
+
+    
+    if y == 0.0
         r = rand()
         if r < 1/3.
-            return x/a
+            return y/a
         elseif 1/3. < r < 2/3.
-            return (x + a - 1)/a
+            return (y + a - 1)/a
         else
-            return (x - a + 1)/a
+            return (y - a + 1)/a
         end
         
-    elseif x == 1.
+    elseif y == 1.
         r = rand()
         if r < 1/3.
-            return x/a
+            return y/a
         elseif 1/3. < r < 2/3.
-            return (x + a - 1)/a
+            return (y + a - 1)/a
         else
-            return (x + a -2.)/a + 1
+            return (y + a -2.)/a + 1
         end
+    end
+           
+#    mua = mub = 1/a
+    #    muc = mud = (a - 2)/(2a)
 
-    else
+    mua = mub = muc = mud = 1/4
+
+    if 0 <= y <= a/2- 1 && -a/2+2 <= y <= 1
         r = rand()
-        if r < 1/a
-            return x/a
-        elseif 1/a < r < 1/2.
-            return (x + a - 1)/a
-        elseif 1/2. < r < (1 - 1/a)
-            return (x+ a -2.)/a + 1
+        mutotal = mua + mub + muc + mud
+        
+        if r <= mua/mutotal
+            return y/a
+        elseif  mua/mutotal < r <= (mua + mub)/mutotal
+            return (y + a - 1)/a
+        elseif (mua + mub)/mutotal < r <= (mua + mub + muc)/mutotal
+            return  (y - a + 1)/a 
         else
-            return (x - a + 1)/a
+            return  (y+ a -2.)/a + 1
+        end
+        
+    elseif 0 <= y <= a/2- 1
+        r = rand()
+        mutotal = mua + mub + muc 
+        
+        if r <= mua/mutotal
+            return y/a
+        elseif  mua/mutotal < r <= (mua + mub)/mutotal
+            return (y + a - 1)/a
+        else
+            return  (y - a + 1)/a
+        end
+        
+    else 
+        r = rand()
+        mutotal = mua + mub + mud
+
+        if r <= mua/mutotal
+            return y/a
+        elseif  mua/mutotal < r <= (mua + mub)/mutotal
+            return (y + a - 1)/a
+        else
+            return (y+ a -2.)/a + 1
         end
     end
 end
@@ -97,7 +131,3 @@ function evolution(x::T, to::S, a::Float64) where {T<: AbstractFloat, S <: Integ
 end
 
 
-
-
-
-    
