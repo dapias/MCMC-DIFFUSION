@@ -11,15 +11,3 @@ In the folder `Examples` we illustrate its basic use for two dynamical systems: 
 3) The two proposals are coded based on the dynamics. It would depend on the nature of the dynamical system (e.g. map or flow) and its dimension.
 
 4) The observable \(r_t\) is defined and used inside `rMCMC`. In our examples, it is the `distance` for the Lorentz gas and `abs(evolution - 1/2)` for the box map. 
-
-
-
-## Installation
-
-From within Julia do
-
-```
-julia> Pkg.clone(https://github.com/dapias/MCMC-DIFFUSION.git")
-```
-
- 
